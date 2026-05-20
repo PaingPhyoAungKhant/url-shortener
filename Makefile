@@ -14,6 +14,9 @@ test:
 lint:
 	golangci-lint run ./...
 
+format:
+	golangci-lint fmt ./...
+
 build:
 	GOOS=$(GOOS) GOARCH=${GOARCH} go build -ldflags="-s -w" -o $(BUILD_DIR)/$(APP) ./cmd/$(APP)
 
