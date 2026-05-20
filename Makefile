@@ -1,7 +1,7 @@
-.PHONY: run test lint
+.PHONY: run test lint format build
 
 BUILD_DIR := bin
-APP := omnipocket
+APP := url-shortener
 GOOS := linux
 GOARCH := amd64
 
@@ -18,7 +18,7 @@ format:
 	golangci-lint fmt ./...
 
 build:
-	GOOS=$(GOOS) GOARCH=${GOARCH} go build -ldflags="-s -w" -o $(BUILD_DIR)/$(APP) ./cmd/$(APP)
+	GOOS=$(GOOS) GOARCH=${GOARCH} go build -ldflags="-s -w" -o $(BUILD_DIR)/$(APP) ./cmd/server/main.go
 
 
 
