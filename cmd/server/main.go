@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/paingphyoaungkhant/url-shortener/internal/server"
+	"github.com/PaingPhyoAungKhant/url-shortener/internal/server"
 )
 
 func main() {
