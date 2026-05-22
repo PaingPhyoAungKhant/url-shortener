@@ -8,28 +8,31 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/PaingPhyoAungKhant/url-shortener/internal/config"
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/handler"
 )
 
 // Server represents the HTTP server
 type Server struct {
 	http *http.Server
+	cfg  *config.Config
 }
 
 // New creates a new instance of the Server with the necessary routes and handlers.
-func New() *Server {
+func New(cfg *config.Config) *Server {
 	mux := http.NewServeMux()
 	h := handler.New()
 	mux.HandleFunc("GET /health", h.Health)
 
 	return &Server{
 		http: &http.Server{
-			Addr:         ":8081",
+			Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
 			Handler:      mux,
-			ReadTimeout:  10 * time.Second,
-			WriteTimeout: 10 * time.Second,
-			IdleTimeout:  60 * time.Second,
+			ReadTimeout:  cfg.Server.ReadTimeout,
+			WriteTimeout: cfg.Server.WriteTimeout,
+			IdleTimeout:  cfg.Server.IdleTimeout,
 		},
+		cfg: cfg,
 	}
 }
 
@@ -55,7 +58,7 @@ func (s *Server) Start(ctx context.Context) error {
 	case <-ctx.Done():
 	}
 
-	shutDownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
+	shutDownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), s.cfg.Server.ShutdownTimeout)
 	defer cancel()
 	if err := s.http.Shutdown(shutDownCtx); err != nil {
 		return fmt.Errorf("server shudtdown failed: %w", err)
