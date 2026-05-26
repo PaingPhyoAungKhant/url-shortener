@@ -10,16 +10,18 @@ import (
 
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/config"
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/handler"
+	"github.com/PaingPhyoAungKhant/url-shortener/internal/logger"
 )
 
 // Server represents the HTTP server
 type Server struct {
 	http *http.Server
 	cfg  *config.Config
+	log  *logger.Logger
 }
 
 // New creates a new instance of the Server with the necessary routes and handlers.
-func New(cfg *config.Config) *Server {
+func New(cfg *config.Config, log *logger.Logger) *Server {
 	mux := http.NewServeMux()
 	h := handler.New()
 	mux.HandleFunc("GET /health", h.Health)
@@ -33,6 +35,7 @@ func New(cfg *config.Config) *Server {
 			IdleTimeout:  cfg.Server.IdleTimeout,
 		},
 		cfg: cfg,
+		log: log,
 	}
 }
 

@@ -17,7 +17,9 @@ type Config struct {
 }
 
 type AppConfig struct {
-	Env string
+	Env       string
+	LogLevel  string
+	LogFormat string
 }
 
 type ServerConfig struct {
@@ -36,7 +38,9 @@ func Load() (*Config, error) {
 	}
 	config := &Config{
 		App: AppConfig{
-			Env: getEnv("APP_ENV", "development"),
+			Env:       getEnv("APP_ENV", "development"),
+			LogLevel:  getEnv("APP_LOGLEVEL", "INFO"),
+			LogFormat: getEnv("APP_LOGFORMAT", "json"),
 		},
 		Server: ServerConfig{
 			Port:            getEnvAsInt("SERVER_PORT", 8081),
@@ -58,6 +62,18 @@ func (c *Config) Validate() error {
 
 	if c.Server.Port < 1 || c.Server.Port > 65535 {
 		return fmt.Errorf("server.port %d: want 1-65535", c.Server.Port)
+	}
+
+	switch c.App.LogLevel {
+	case "debug", "info", "warn", "error":
+	default:
+		return fmt.Errorf("app.loglevel %q: want debug|info|warn|error", c.App.LogLevel)
+	}
+
+	switch c.App.LogFormat {
+	case "json", "text":
+	default:
+		return fmt.Errorf("app.logformat %q: want json|text", c.App.LogFormat)
 	}
 
 	return nil
