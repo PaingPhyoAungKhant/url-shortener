@@ -18,10 +18,10 @@ type Logger struct {
 	sl *slog.Logger
 }
 
-type contextKey int
+type ctxKey string
 
 const (
-	traceIDKey contextKey = iota
+	traceIDKey ctxKey = "TRACE_ID_KEY"
 )
 
 // String returns a Attr for a string value
@@ -60,7 +60,7 @@ func Duration(key string, value time.Duration) slog.Attr {
 }
 
 // Err returns a Field with an error value
-func Err(err error) slog.Attr {
+func Err(err any) slog.Attr {
 	return slog.Any("error", err)
 }
 
@@ -108,10 +108,10 @@ func WithTraceID(ctx context.Context, traceID string) context.Context {
 	return context.WithValue(ctx, traceIDKey, traceID)
 }
 
-// TraceIDFromContext returns the traceID from context
+// TraceIDFromCtx return the the traceID from context
 // that is stored by WithTraceID
 // or return an empty string "" if traceID was not set
-func TraceIDFromContext(ctx context.Context) string {
+func TraceIDFromCtx(ctx context.Context) string {
 	if v, ok := ctx.Value(traceIDKey).(string); ok {
 		return v
 	}
@@ -120,7 +120,7 @@ func TraceIDFromContext(ctx context.Context) string {
 
 // addTraceID get the traceID from the context and add it log call
 func addTraceID(ctx context.Context, args []slog.Attr) []slog.Attr {
-	if traceID := TraceIDFromContext(ctx); traceID != "" {
+	if traceID := TraceIDFromCtx(ctx); traceID != "" {
 		args = append(args, slog.String("trace_id", traceID))
 	}
 	return args
