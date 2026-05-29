@@ -11,6 +11,7 @@ import (
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/config"
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/handler"
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/logger"
+	"github.com/PaingPhyoAungKhant/url-shortener/internal/middleware"
 )
 
 // Server represents the HTTP server
@@ -18,29 +19,73 @@ type Server struct {
 	http *http.Server
 	cfg  *config.Config
 	log  *logger.Logger
+	mux  *http.ServeMux
+}
+
+// Group represents a route group
+type Group struct {
+	server      *Server
+	prefix      string
+	middlewares []func(http.Handler) http.Handler
 }
 
 // New creates a new instance of the Server with the necessary routes and handlers.
 func New(cfg *config.Config, log *logger.Logger) *Server {
 	mux := http.NewServeMux()
 	h := handler.New()
-	mux.HandleFunc("GET /health", h.Health)
 
-	return &Server{
+	wrappedMux := chain(
+		mux,
+		middleware.RequestID,
+		middleware.Error,
+		middleware.Logging(log),
+		middleware.Recovery(log),
+	)
+
+	s := &Server{
 		http: &http.Server{
 			Addr:         fmt.Sprintf(":%d", cfg.Server.Port),
-			Handler:      mux,
+			Handler:      wrappedMux,
 			ReadTimeout:  cfg.Server.ReadTimeout,
 			WriteTimeout: cfg.Server.WriteTimeout,
 			IdleTimeout:  cfg.Server.IdleTimeout,
 		},
+		mux: mux,
 		cfg: cfg,
 		log: log,
 	}
+
+	s.Handle("GET /health", http.HandlerFunc(h.Health))
+
+	return s
 }
 
-func (s *Server) Router() *http.ServeMux {
-	return s.http.Handler.(*http.ServeMux)
+// Group creates a new route group with given prefix name and middlewares
+func (s *Server) Group(prefix string, middlewares ...func(http.Handler) http.Handler) *Group {
+	return &Group{
+		server:      s,
+		prefix:      prefix,
+		middlewares: middlewares,
+	}
+}
+
+// Handle register a handler to the route group with given pattern and optional additional middlewares provided
+func (g *Group) Handle(pattern string, h http.Handler, middlewares ...func(http.Handler) http.Handler) {
+	combined := append(g.middlewares, middlewares...)
+	g.server.Handle(g.prefix+pattern, h, combined...)
+}
+
+// chain is a helper function for middleware chaining
+func chain(h http.Handler, middlewares ...func(http.Handler) http.Handler) http.Handler {
+	for i := len(middlewares) - 1; i >= 0; i-- {
+		h = middlewares[i](h)
+	}
+	return h
+}
+
+// Handle register a route handler with provided middlewares to a given route pattern
+func (s *Server) Handle(pattern string, h http.Handler, middlewares ...func(http.Handler) http.Handler) {
+	s.mux.Handle(pattern, chain(h, middlewares...))
 }
 
 // Start starts the HTTP server and listens for incoming requests.

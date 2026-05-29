@@ -5,6 +5,11 @@ go 1.26
 tool github.com/evilmartians/lefthook/v2
 
 require (
+	github.com/google/uuid v1.6.0
+	github.com/joho/godotenv v1.5.1
+)
+
+require (
 	charm.land/lipgloss/v2 v2.0.3 // indirect
 	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/bmatcuk/doublestar/v4 v4.10.0 // indirect
@@ -25,7 +30,6 @@ require (
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-yaml v1.19.2 // indirect
-	github.com/joho/godotenv v1.5.1 // indirect
 	github.com/kaptinlin/go-i18n v0.3.0 // indirect
 	github.com/kaptinlin/jsonpointer v0.4.17 // indirect
 	github.com/kaptinlin/jsonschema v0.7.7 // indirect
