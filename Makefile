@@ -6,7 +6,7 @@ GOOS := linux
 GOARCH := amd64
 
 run:
-	go run ./cmd/gateway/main.go
+	go run ./cmd/api/main.go
 
 test: 
 	go test ./...
