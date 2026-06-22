@@ -31,15 +31,12 @@ type ServerConfig struct {
 }
 
 // Load reads the configuration from the environment variables and returns a Config struct.
-func Load() (*Config, error) {
-	err := godotenv.Load()
-	if err != nil {
-		return nil, err
-	}
+func Load() *Config {
+	_ = godotenv.Load()
 	config := &Config{
 		App: AppConfig{
 			Env:       getEnv("APP_ENV", "development"),
-			LogLevel:  getEnv("APP_LOGLEVEL", "INFO"),
+			LogLevel:  getEnv("APP_LOGLEVEL", "info"),
 			LogFormat: getEnv("APP_LOGFORMAT", "json"),
 		},
 		Server: ServerConfig{
@@ -50,7 +47,7 @@ func Load() (*Config, error) {
 			ShutdownTimeout: getEnvAsDuration("SERVER_SHUTDOWN_TIMEOUT", 10*time.Second),
 		},
 	}
-	return config, nil
+	return config
 }
 
 func (c *Config) Validate() error {

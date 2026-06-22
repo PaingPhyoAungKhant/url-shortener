@@ -17,26 +17,22 @@ func main() {
 }
 
 func run() int {
-	cfg, err := config.Load()
-	if err != nil {
-		log.Fatal("fail to load the configuration: %w", err)
-	}
+	cfg := config.Load()
 
-	err = cfg.Validate()
+	err := cfg.Validate()
 	if err != nil {
-		log.Fatal("config validation failed: %w", err)
+		log.Fatalf("config validation failed: %v", err)
 	}
 
 	logger, err := logger.New(cfg.App.LogLevel, cfg.App.LogFormat)
 	if err != nil {
-		log.Fatal("fail to load logger: %w", err)
+		log.Fatalf("fail to load logger: %v", err)
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 	app := app.New(cfg, logger)
 	if err := app.Run(ctx); err != nil {
-		log.Fatal("could not start the application %w", err)
-		return 1
+		log.Fatalf("could not start the application: %v", err)
 	}
 	log.Println("Gateway stopped")
 	return 0
