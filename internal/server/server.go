@@ -4,7 +4,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -93,7 +92,7 @@ func (s *Server) Start(ctx context.Context) error {
 	listenErr := make(chan error, 1)
 
 	go func() {
-		log.Printf("Server is listening on %s \n", s.http.Addr)
+		s.log.Info(ctx, "server listening", logger.String("addr", s.http.Addr))
 		if err := s.http.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			listenErr <- err
 		}
@@ -115,7 +114,7 @@ func (s *Server) Start(ctx context.Context) error {
 		return err
 	}
 
-	log.Println("server gracefully stopped")
+	s.log.Info(ctx, "server gracefully stopped")
 
 	return nil
 }

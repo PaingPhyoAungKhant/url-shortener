@@ -2,7 +2,6 @@ package app
 
 import (
 	"context"
-	"log"
 
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/config"
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/logger"
@@ -19,7 +18,7 @@ func New(cfg *config.Config, log *logger.Logger) *App {
 }
 
 func (a *App) Run(ctx context.Context) error {
-	log.Println("Starting the application...")
+	a.log.Info(ctx, "Starting the application...")
 	srv := server.New(a.cfg, a.log)
 	return srv.Start(ctx)
 }
