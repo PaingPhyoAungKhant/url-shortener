@@ -1,18 +1,15 @@
 package middleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/PaingPhyoAungKhant/url-shortener/internal/apperr"
 )
 
-// Error is an middleware that inject an AppErr pointer-to-pointer value in ctx whith AppErrKey for downsteam handlers to mutate and log error
+// Error is a middleware that injects a mutable AppErr slot into ctx for downstream handlers to set.
 func Error(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		appErrPtr := new(*apperr.AppErr)
-		ctx := context.WithValue(r.Context(), apperr.AppErrKey, appErrPtr)
-		r = r.WithContext(ctx)
-		next.ServeHTTP(w, r)
+		ctx := apperr.WithAppErr(r.Context())
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

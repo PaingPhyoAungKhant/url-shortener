@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -32,14 +33,15 @@ func Logging(log *logger.Logger) func(http.Handler) http.Handler {
 			if appErrPtr, ok := ctx.Value(apperr.AppErrKey).(**apperr.AppErr); ok && appErrPtr != nil {
 				appErr := *appErrPtr
 				if rec.status >= 500 {
-					log.Error(
-						ctx,
-						"internal error",
+					fields := []slog.Attr{
 						logger.String("path", r.URL.Path),
 						logger.Int("status", rec.status),
 						logger.String("latency", time.Since(start).String()),
-						logger.Err(appErr.LogError()),
-					)
+					}
+					if appErr != nil {
+						fields = append(fields, logger.Err(appErr.LogError()))
+					}
+					log.Error(ctx, "internal error", fields...)
 				} else {
 					log.Info(
 						ctx,

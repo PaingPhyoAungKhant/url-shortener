@@ -39,9 +39,7 @@ func WriteJSON(w http.ResponseWriter, statusCode int, body any) {
 // return an structured error response
 func WriteErr(w http.ResponseWriter, r *http.Request, err *apperr.AppErr) {
 	ctx := r.Context()
-	if appErr, ok := ctx.Value(apperr.AppErrKey).(**apperr.AppErr); ok {
-		*appErr = err
-	}
+	apperr.AppErrSetErrFromCtx(ctx, err)
 	statusCode, exist := statusMap[err.Code]
 	if !exist {
 		statusCode = http.StatusInternalServerError
