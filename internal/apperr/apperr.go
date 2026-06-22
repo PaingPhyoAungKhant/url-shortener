@@ -31,18 +31,25 @@ type AppErr struct {
 	cause   error
 }
 
-// WithAppErr store the AppErr in given context
-func WithAppErr(ctx context.Context, err *AppErr) context.Context {
-	return context.WithValue(ctx, AppErrKey, err)
+// WithAppErr injects a mutable AppErr slot into ctx so downstream handlers can set it.
+// This matches the pattern used by the Error middleware.
+func WithAppErr(ctx context.Context) context.Context {
+	return context.WithValue(ctx, AppErrKey, new(*AppErr))
 }
 
-// AppErrFromCtx return the AppErr store in given context
-// returns nil if AppErr doesn't exist in context
+// AppErrFromCtx returns the AppErr stored in ctx by WithAppErr or the Error middleware,
+// or nil if no error has been set.
 func AppErrFromCtx(ctx context.Context) *AppErr {
-	if err, ok := ctx.Value(AppErrKey).(*AppErr); ok {
-		return err
+	if appErrPtr, ok := ctx.Value(AppErrKey).(**AppErr); ok && appErrPtr != nil {
+		return *appErrPtr
 	}
 	return nil
+}
+
+func AppErrSetErrFromCtx(ctx context.Context, err *AppErr) {
+	if appErr, ok := ctx.Value(AppErrKey).(**AppErr); ok {
+		*appErr = err
+	}
 }
 
 // Error returns a short "CODE: message" string suitable for user-facing output.
